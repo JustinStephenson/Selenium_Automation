@@ -2,12 +2,15 @@ package pageobjects.common.element;
 
 import org.openqa.selenium.WebElement;
 
-public abstract class InputElement extends Element {
+public abstract class AbstractInputElement extends AbstractElement {
 
-    public InputElement(WebElement webElement) {
+    public AbstractInputElement(WebElement webElement) {
         super(webElement);
     }
 
+    /**
+     * Send input to WebElement
+     */
     public void inputText(String value) {
         getWrappedElement().clear();
         getWrappedElement().sendKeys(value);

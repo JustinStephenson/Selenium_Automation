@@ -4,13 +4,13 @@ import lombok.Getter;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.FindBy;
-import pageobjects.common.PageObject;
+import pageobjects.common.AbstractPageObject;
 import pageobjects.common.element.input.InputTextBox;
 
 import javax.inject.Inject;
 
 @Getter
-public class GoogleLandingPage extends PageObject {
+public class GoogleLandingPage extends AbstractPageObject {
 
     @FindBy(css = "input[class='gLFyf gsfi']")
     private InputTextBox inputBox;

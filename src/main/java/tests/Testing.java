@@ -8,7 +8,7 @@ import javax.inject.Inject;
 
 public class Testing extends RunTest {
 
-    @Inject GoogleLandingPage googleLandingPage;
+    @Inject private GoogleLandingPage googleLandingPage;
 
     @Test
     private void testing() {
