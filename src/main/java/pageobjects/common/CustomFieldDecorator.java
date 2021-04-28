@@ -15,7 +15,6 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pageobjects.common.element.AbstractElement;
-import pageobjects.common.element.click.Button;
 
 import java.lang.reflect.*;
 import java.util.List;
