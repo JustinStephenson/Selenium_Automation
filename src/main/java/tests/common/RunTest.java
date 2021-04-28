@@ -29,7 +29,7 @@ public class RunTest {
         driver.get(url);
     }
 
-    @AfterTest
+    @AfterTest(alwaysRun = true)
     public void tearDown() {
         logger.debug("Closing browser session and quiting web driver");
         driverManager.quitDriver();
