@@ -15,6 +15,7 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pageobjects.common.element.AbstractElement;
+import pageobjects.common.element.click.Button;
 
 import java.lang.reflect.*;
 import java.util.List;
@@ -40,8 +41,14 @@ public class CustomFieldDecorator implements FieldDecorator {
             return null;
         }
         if (List.class.isAssignableFrom(field.getType())) {
+            ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+            Class<?> clazz = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+            if (AbstractElement.class.isAssignableFrom(clazz)) {
+                return proxyForListAbstractElementLocator(loader, locator, field);
+            }
             return proxyForListLocator(loader, locator);
         }
+
         return proxyForLocator(loader, locator, field);
     }
 
@@ -54,7 +61,7 @@ public class CustomFieldDecorator implements FieldDecorator {
                 return false;
             } else {
                 Type listType = ((ParameterizedType)genericType).getActualTypeArguments()[0];
-                if (!WebElement.class.equals(listType)) {
+                if (!WebElement.class.equals(listType) && AbstractElement.class.isAssignableFrom(listType.getClass())) {
                     return false;
                 } else {
                     return field.getAnnotation(FindBy.class) != null || field.getAnnotation(FindBys.class) != null || field.getAnnotation(FindAll.class) != null;
@@ -70,18 +77,20 @@ public class CustomFieldDecorator implements FieldDecorator {
         proxy = (WebElement) Proxy.newProxyInstance(
                 loader, new Class[] {WebElement.class, WrapsElement.class, Locatable.class}, handler);
 
-        // Return the the sub class of Element that is being used
-        Reflections reflections = new Reflections("pageobjects.common.element");
-        Set<Class<? extends AbstractElement>> classes = reflections.getSubTypesOf(AbstractElement.class);
-        for (Class<? extends AbstractElement> subClass : classes) {
-            if (field.getType() == subClass) {
-                try{
-                    Constructor<? extends AbstractElement> constructor = subClass.getConstructor(WebElement.class);
-                    return constructor.newInstance(proxy);
-                }
-                catch (NoSuchMethodException | IllegalAccessException | InstantiationException |
-                        InvocationTargetException e) {
-                    logger.error(e.getMessage());
+        if (AbstractElement.class.isAssignableFrom(field.getType())) {
+            // Return the the sub class of AbstractElement that is being used
+            Reflections reflections = new Reflections("pageobjects.common.element");
+            Set<Class<? extends AbstractElement>> classes = reflections.getSubTypesOf(AbstractElement.class);
+            for (Class<? extends AbstractElement> subClass : classes) {
+                if (field.getType() == subClass) {
+                    try{
+                        Constructor<? extends AbstractElement> constructor = subClass.getConstructor(WebElement.class);
+                        return constructor.newInstance(proxy);
+                    }
+                    catch (NoSuchMethodException | IllegalAccessException | InstantiationException |
+                            InvocationTargetException e) {
+                        logger.error(e.getMessage());
+                    }
                 }
             }
         }
@@ -89,10 +98,18 @@ public class CustomFieldDecorator implements FieldDecorator {
         return proxy;
     }
 
+    @SuppressWarnings("unchecked")
     protected List<WebElement> proxyForListLocator(ClassLoader loader, ElementLocator locator) {
         InvocationHandler handler = new LocatingElementListHandler(locator);
-        List<WebElement> proxy = (List)Proxy.newProxyInstance(loader, new Class[]{List.class}, handler);
+        List<WebElement> proxy = (List<WebElement>)Proxy.newProxyInstance(loader, new Class[]{List.class}, handler);
         return proxy;
     }
 
+    //TODO: Add logic for AbstractElement List ie. using @FindAll or @FindBys
+    @SuppressWarnings("unchecked")
+    protected List<Object> proxyForListAbstractElementLocator(ClassLoader loader, ElementLocator locator, Field field) {
+        InvocationHandler handler = new LocatingElementListHandler(locator);
+        List<Object> proxy = (List<Object>)Proxy.newProxyInstance(loader, new Class[]{List.class}, handler);
+        return proxy;
+    }
 }

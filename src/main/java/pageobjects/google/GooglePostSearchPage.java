@@ -34,11 +34,15 @@ public class GooglePostSearchPage extends AbstractPageObject {
     @FindAll({@FindBy(css = "h3[class='LC20lb DKV0Md']")})
     private List<WebElement> googleSearchOptions;
 
+    @FindAll({@FindBy(css = "h3[class='LC20lb DKV0Md']")})
+    private List<Button> googleSearchOptionsTest;
+
     @Inject
     public GooglePostSearchPage(WebDriver driver) {
         super(driver);
     }
 
+    //TODO: update when Abstract Element lists is working
     public void clickFirstLink() {
         googleSearchOptions.get(0).click();
     }
